@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connected University — Salesforce Education Cloud Demo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --gold:#C9A227;--gold-l:#FDF6DC;--gold-t:#6B4E00;
+  --sf:#0176D3;--sf-d:#014486;--sf-l:#EAF5FE;--sf-ll:#F0F7FF;
+  --nav:#16325C;--nav2:#0C2040;
+  --bg:#F3F2F2;--white:#fff;
+  --bdr:#DDDBDA;--bdr2:#C9C7C5;
+  --tx:#181818;--mu:#706E6B;--hi:#B0ADAB;
+  --gr:#2E844A;--gr-l:#EEF8EB;
+  --re:#C23934;--re-l:#FDECEA;
+  --or:#CA8501;--or-l:#FEF5EC;
+  --pu:#6B4FBB;--pu-l:#F4EEFF;
+  --te:#0B827C;--te-l:#E8F7F6;
+}
+html,body{height:100%;font-family:'Salesforce Sans',Arial,sans-serif;color:var(--tx);font-size:13px;background:#E8E8E8;}
+.page-wrap{max-width:1100px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column;gap:8px;}
+.think-beyond-bar{background:var(--nav);border-radius:6px;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;}
+.tb-logo{color:white;font-size:13px;font-weight:800;letter-spacing:0.5px;}
+.tb-logo span{color:var(--gold);}
+.tb-note{color:rgba(255,255,255,0.6);font-size:10px;}
+.shell{width:100%;display:flex;flex-direction:column;border:1px solid #AAA9A6;border-radius:8px;overflow:hidden;background:var(--bg);box-shadow:0 4px 24px rgba(0,0,0,0.13);}
+
+/* NAV */
+.gnav{background:var(--nav);height:46px;display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;}
+.gnav-logo{display:flex;align-items:center;gap:7px;}
+.gnav-sf{width:28px;height:28px;border-radius:6px;background:#00A1E0;display:flex;align-items:center;justify-content:center;}
+.gnav-sf svg{width:18px;height:18px;}
+.gnav-brand{display:flex;flex-direction:column;line-height:1.15;}
+.gnav-top{color:rgba(255,255,255,0.6);font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;}
+.gnav-bot{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;}
+.gnav-div{width:1px;height:22px;background:rgba(255,255,255,0.15);margin:0 4px;}
+.gnav-app{color:rgba(255,255,255,0.88);font-size:12px;font-weight:600;}
+.gnav-search{margin-left:16px;flex:0 0 200px;background:rgba(255,255,255,0.09);border:1px solid rgba(255,255,255,0.16);border-radius:4px;height:26px;display:flex;align-items:center;padding:0 9px;color:rgba(255,255,255,0.45);font-size:11px;gap:5px;}
+.gnav-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.gnav-icon{color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;}
+.gnav-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:white;border:2px solid rgba(255,255,255,0.25);cursor:pointer;}
+
+/* APPNAV */
+.appnav{background:#F3F2F2;border-bottom:1px solid var(--bdr);height:34px;display:flex;align-items:stretch;padding:0 12px;flex-shrink:0;}
+.appnav-waffle{width:30px;display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:15px;margin-right:6px;}
+.appnav-item{display:flex;align-items:center;padding:0 12px;font-size:12px;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-weight:500;}
+.appnav-item.on{color:var(--sf);border-bottom-color:var(--sf);font-weight:700;}
+.appnav-item:hover:not(.on){color:var(--tx);background:rgba(0,0,0,0.04);}
+
+/* PATH */
+.path{background:white;border-bottom:1px solid var(--bdr);height:32px;display:flex;align-items:center;padding:0 14px;gap:6px;font-size:12px;flex-shrink:0;}
+.path-cr{color:var(--sf);cursor:pointer;}
+.path-cur{color:var(--tx);font-weight:600;}
+.path-sep{color:var(--hi);}
+.narr-pill{display:inline-flex;align-items:center;gap:5px;background:var(--nav);color:white;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;margin-left:auto;}
+.narr-pill:hover{background:var(--nav2);}
+.narr-pill.open{background:var(--sf);}
+.pill-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+/* NARRATION PANEL */
+#narr-panel{display:none;padding:0 14px 0;background:var(--bg);border-bottom:1px solid var(--bdr);}
+.narr-box{background:white;border:2px solid var(--sf);border-radius:8px;padding:14px 16px;margin:8px 0 4px;position:relative;}
+.narr-close{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--mu);font-size:16px;cursor:pointer;line-height:1;font-weight:700;}
+.narr-ch{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--sf);margin-bottom:3px;}
+.narr-hl{font-size:14px;font-weight:800;color:var(--tx);margin-bottom:8px;line-height:1.3;}
+.narr-story{font-size:12px;color:var(--tx);line-height:1.7;margin-bottom:10px;}
+.narr-feature{background:var(--sf-l);border-left:3px solid var(--sf);padding:8px 10px;border-radius:0 4px 4px 0;font-size:11px;color:#014486;margin-bottom:8px;line-height:1.5;}
+.narr-action{background:var(--gold-l);border-left:3px solid var(--gold);padding:8px 10px;border-radius:0 4px 4px 0;font-size:11px;color:var(--gold-t);line-height:1.5;margin-bottom:8px;}
+.narr-note{background:#F3F2F2;border:1px dashed var(--bdr2);border-radius:4px;padding:7px 10px;font-size:10px;color:var(--mu);line-height:1.5;font-style:italic;}
+
+/* CONTENT */
+.content{display:flex;flex:1;overflow:hidden;min-height:520px;}
+.main{flex:1;overflow-y:auto;padding:12px;}
+.sidebar{flex:0 0 264px;border-left:1px solid var(--bdr);display:flex;flex-direction:column;background:white;overflow:hidden;}
+
+/* RECORD HEADER */
+.rec-hdr{background:white;border-bottom:3px solid var(--sf);padding:10px 14px 0;flex-shrink:0;}
+.rec-hdr-body{display:flex;align-items:flex-start;gap:12px;padding-bottom:10px;}
+.rec-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:white;flex-shrink:0;outline:2px solid rgba(0,0,0,0.08);}
+.rec-name-block{flex:1;}
+.rec-name{font-size:18px;font-weight:700;color:var(--tx);line-height:1.2;}
+.rec-meta{font-size:11px;color:var(--mu);margin-top:2px;}
+.rec-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
+.rec-highlights{display:flex;border-top:1px solid var(--bdr);padding:8px 0 0;}
+.rec-hl{flex:1;padding:0 12px 0 0;border-right:1px solid var(--bdr);margin-right:12px;}
+.rec-hl:last-child{border-right:none;margin-right:0;padding-right:0;}
+.rec-hl label{font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px;}
+.rec-hl .v{font-size:13px;color:var(--tx);}
+.rec-hl .v.lnk{color:var(--sf);cursor:pointer;}
+.rec-hl .v.gr{color:var(--gr);font-weight:700;}
+.rec-hl .v.or{color:var(--or);font-weight:700;}
+.rec-hl .v.re{color:var(--re);font-weight:700;}
+.rec-actions{display:flex;gap:6px;padding:8px 0;flex-wrap:wrap;}
+
+/* CARDS */
+.card{background:white;border:1px solid var(--bdr);border-radius:6px;margin-bottom:10px;overflow:hidden;}
+.card-hdr{padding:8px 14px;border-bottom:1px solid var(--bdr);font-size:12px;font-weight:700;color:var(--tx);display:flex;align-items:center;justify-content:space-between;background:#FAFAF9;}
+.card-body{padding:10px 14px;}
+.scard{background:white;border:1px solid var(--bdr);border-radius:6px;padding:10px 12px;}
+
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;white-space:nowrap;line-height:1.4;}
+.bdg-blue{background:#D9EDFA;color:#014486;}
+.bdg-green{background:#D6EED9;color:#0A4023;}
+.bdg-orange{background:#FDEFD0;color:#5C3600;}
+.bdg-red{background:var(--re-l);color:#6B1414;}
+.bdg-gray{background:#F3F2F2;color:var(--mu);}
+.bdg-purple{background:var(--pu-l);color:#3D2076;}
+.bdg-teal{background:var(--te-l);color:#054240;}
+.bdg-gold{background:var(--gold-l);color:var(--gold-t);}
+.bdg-dot::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;}
+.bdg-dot-green::before{background:var(--gr);}
+.bdg-dot-red::before{background:var(--re);}
+.bdg-dot-orange::before{background:var(--or);}
+
+/* BUTTONS */
+.btn{font-size:12px;padding:0 14px;height:30px;border-radius:4px;cursor:pointer;font-weight:600;border:1px solid;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;}
+.btn-prim{background:var(--sf);color:white;border-color:var(--sf-d);}
+.btn-prim:hover{background:var(--sf-d);}
+.btn-neut{background:white;color:var(--tx);border-color:var(--bdr2);}
+.btn-neut:hover{background:#F3F2F2;}
+.btn-suc{background:var(--gr);color:white;border-color:#0A4023;}
+.btn-warn{background:var(--or);color:white;border-color:#5C3600;}
+.btn-destr{background:white;color:var(--re);border-color:var(--re);}
+.btn-sm{font-size:11px;padding:0 10px;height:26px;}
+
+/* TABLE */
+.lt{width:100%;border-collapse:collapse;font-size:12px;}
+.lt th{background:#F3F2F2;padding:6px 10px;text-align:left;font-weight:700;color:var(--mu);font-size:10px;text-transform:uppercase;letter-spacing:0.4px;border-bottom:2px solid var(--bdr);border-top:1px solid var(--bdr);}
+.lt td{padding:7px 10px;border-bottom:1px solid var(--bdr);vertical-align:middle;}
+.lt tr:last-child td{border-bottom:none;}
+.lt tbody tr:hover td{background:#F0F7FF;}
+.lnk{color:var(--sf);cursor:pointer;}
+.lnk:hover{text-decoration:underline;}
+
+/* PROGRESS */
+.prog{background:#E5E5E4;border-radius:6px;height:6px;overflow:hidden;}
+.prog-f{height:100%;border-radius:6px;}
+
+/* KPI */
+.kpi-g{display:grid;gap:8px;margin-bottom:10px;}
+.kpi{background:white;border:1px solid var(--bdr);border-radius:6px;padding:10px 12px;border-top:3px solid;}
+.kpi-n{font-size:20px;font-weight:800;margin-top:2px;}
+.kpi-l{font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.kpi-t{font-size:10px;margin-top:3px;}
+
+/* FIELD GRID */
+.fg{display:grid;gap:10px;}
+.fg-2{grid-template-columns:1fr 1fr;}
+.fg-3{grid-template-columns:1fr 1fr 1fr;}
+.fg-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.f label{font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:2px;}
+.f .fv{font-size:13px;color:var(--tx);}
+.f .fv.lnk{color:var(--sf);}
+
+/* TIMELINE */
+.tl{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdr);align-items:flex-start;}
+.tl:last-child{border-bottom:none;}
+.tl-ic{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;}
+.tl-b{flex:1;}
+.tl-t{font-size:12px;font-weight:700;}
+.tl-s{font-size:10px;color:var(--mu);margin-top:1px;}
+.tl-d{font-size:10px;color:var(--hi);flex-shrink:0;margin-left:6px;}
+
+/* JOURNEY BAR */
+.jbar{display:flex;border-radius:6px;overflow:hidden;margin-bottom:10px;border:1px solid var(--bdr);}
+.js{flex:1;text-align:center;padding:7px 2px;font-size:9px;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);}
+.js:last-child{border-right:none;}
+.js-dot{font-size:12px;display:block;margin-bottom:2px;}
+.js-done{background:var(--gr);color:white;}
+.js-act{background:var(--sf);color:white;}
+.js-pend{background:#B0ADAB;color:white;}
+.js-dim{background:#D8D8D6;color:var(--mu);}
+
+/* OMNI BAR */
+.omni{background:white;border-top:2px solid var(--sf);padding:0 14px;height:38px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.omni-dot{width:8px;height:8px;border-radius:50%;}
+.omni-item{display:flex;align-items:center;gap:5px;border:1px solid var(--bdr);border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;white-space:nowrap;}
+.omni-item.hot{background:var(--re-l);border-color:var(--re);color:var(--re);}
+.omni-item.norm{background:var(--sf-l);color:var(--sf);}
+
+/* KANBAN */
+.kanban{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+.kb{flex:0 0 150px;background:#F3F2F2;border-radius:6px;padding:8px;}
+.kb-h{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+.kc{background:white;border:1px solid var(--bdr);border-radius:4px;padding:8px;margin-bottom:5px;cursor:pointer;border-left:3px solid transparent;}
+.kc:hover{border-color:var(--sf);}
+.kc-n{font-size:11px;font-weight:700;color:var(--tx);}
+.kc-s{font-size:10px;color:var(--mu);margin-top:2px;}
+
+/* CHECKLIST */
+.chk{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:11px;}
+.chk:last-child{border-bottom:none;}
+.chk-ic{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;font-weight:800;}
+
+/* AGENT SIDEBAR */
+.ag-hdr{background:linear-gradient(160deg,#1B2A6B 0%,#0176D3 100%);padding:11px 12px;display:flex;align-items:center;gap:9px;flex-shrink:0;}
+.ag-orb{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.ag-title{color:white;font-size:12px;font-weight:700;}
+.ag-sub{color:rgba(255,255,255,0.6);font-size:10px;}
+.ag-body{flex:1;overflow-y:auto;padding:10px;}
+.chat-a{background:#EFF3FF;border:1px solid #C8D4F5;border-radius:8px 8px 8px 2px;padding:8px 10px;font-size:11px;line-height:1.5;color:var(--tx);margin-bottom:4px;}
+.chat-u{background:var(--sf);border-radius:8px 8px 2px 8px;padding:8px 10px;font-size:11px;line-height:1.5;color:white;margin-left:24px;margin-bottom:4px;}
+.chat-meta{font-size:9px;color:var(--hi);margin-bottom:8px;}
+.chat-meta.r{text-align:right;}
+.ag-actions{display:flex;flex-direction:column;gap:5px;margin-top:10px;}
+.ag-act-btn{font-size:11px;padding:5px 10px;border-radius:4px;background:var(--sf);color:white;border:none;cursor:pointer;font-weight:600;text-align:left;display:flex;align-items:center;gap:5px;}
+.ag-act-btn:hover{background:var(--sf-d);}
+.ag-inp-wrap{padding:9px 10px;border-top:1px solid var(--bdr);flex-shrink:0;}
+.ag-inp{background:#F3F2F2;border:1px solid var(--bdr);border-radius:16px;padding:6px 12px;font-size:11px;color:var(--mu);display:flex;align-items:center;justify-content:space-between;}
+.ag-inp-send{color:var(--sf);font-weight:800;font-size:14px;cursor:pointer;}
+.ag-suggest{font-size:9px;color:var(--hi);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin:10px 0 5px;}
+.ag-chip{background:var(--sf-l);border:1px solid #C0D8F0;border-radius:4px;padding:4px 8px;font-size:10px;color:#014486;margin-bottom:4px;cursor:pointer;}
+.ag-chip:hover{background:#D0E8F8;}
+
+/* PORTAL */
+.portal-hero{background:var(--nav);padding:16px 14px;border-radius:6px 6px 0 0;}
+.portal-nav{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.15);}
+.portal-nav-item{color:rgba(255,255,255,0.6);font-size:11px;padding:6px 12px;cursor:pointer;border-bottom:2px solid transparent;}
+.portal-nav-item.on{color:white;border-bottom-color:var(--gold);}
+
+/* SCORE RING */
+.ring-wrap{text-align:center;}
+.ring-lbl{font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase;margin-bottom:3px;}
+.ring{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:4px solid;}
+
+/* SLIDE NAV */
+.slide-nav{background:#0C2040;padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;}
+.snav-mid{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.snav-lbl{color:rgba(255,255,255,0.8);font-size:10px;font-weight:600;white-space:nowrap;}
+.dots{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.22);cursor:pointer;transition:all 0.2s;}
+.dot.on{background:var(--gold);width:18px;border-radius:3px;}
+.nav-btn{color:white;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:4px 14px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:4px;}
+.nav-btn:hover:not(:disabled){background:rgba(255,255,255,0.2);}
+.nav-btn:disabled{opacity:0.28;cursor:not-allowed;}
+
+/* DISCLAIMER */
+.disclaimer{background:#FDF6DC;border-top:1px solid #E8C84A;padding:5px 14px;font-size:10px;color:#5C4000;display:flex;align-items:flex-start;gap:6px;flex-shrink:0;line-height:1.5;}
+
+/* SEC HEADER */
+.sec-hdr{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:0.6px;margin:10px 0 6px;}
+
+/* HELPERS */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.four{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.five{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="think-beyond-bar">
+    <div class="tb-logo">Think <span>Beyond</span> &nbsp;&nbsp;&#183;&nbsp;&nbsp; Salesforce Education Cloud</div>
+    <div class="tb-note">Confidential — For demonstration purposes only</div>
+  </div>
+
+  <div class="shell" id="app">
+    <!-- GLOBAL NAV -->
+    <div class="gnav">
+      <div class="gnav-logo">
+        <div class="gnav-sf">
+          <svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="9" ry="7" fill="white"/><text x="12" y="17" text-anchor="middle" fill="#00A1E0" font-size="9" font-weight="900" font-family="Arial">SF</text></svg>
+        </div>
+        <div class="gnav-brand"><span class="gnav-top">Connected</span><span class="gnav-bot">University</span></div>
+      </div>
+      <div class="gnav-div"></div>
+      <span class="gnav-app" id="g-app">Education Cloud</span>
+      <div class="gnav-search">&#128269; &nbsp;Search Salesforce...</div>
+      <div class="gnav-right">
+        <div class="gnav-icon">&#9733;</div>
+        <div class="gnav-icon">&#9881;</div>
+        <div class="gnav-icon">&#128276;</div>
+        <div class="gnav-icon">?</div>
+        <div class="gnav-av" id="g-av" style="background:#0176D3;">AD</div>
+      </div>
+    </div>
+
+    <!-- APP NAV -->
+    <div class="appnav" id="g-appnav">
+      <div class="appnav-waffle">&#8942;</div>
+    </div>
+
+    <!-- PATH -->
+    <div class="path" id="g-path"></div>
+
+    <!-- NARRATION PANEL -->
+    <div id="narr-panel">
+      <div class="narr-box" id="narr-content">
+        <button class="narr-close" onclick="toggleNarr()">&#10005;</button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="main" id="main"></div>
+      <div class="sidebar" id="sidebar"></div>
+    </div>
+
+    <!-- OMNI BAR -->
+    <div class="omni" id="omni-bar" style="display:none;">
+      <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#2E844A;"><div class="omni-dot" style="background:#2E844A;"></div>Available</div>
+      <div class="omni-item norm">&#128231; Email — Layla Hassan</div>
+      <div class="omni-item norm">&#128172; Chat — New Enquiry</div>
+      <div class="omni-item hot">&#128222; URGENT — Financial Aid</div>
+      <span style="font-size:10px;color:var(--mu);margin-left:auto;">Omni-Channel &nbsp;&#183;&nbsp; 3 in queue</span>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="disclaimer">
+      &#9432;&nbsp;
+      <span><strong>Reference Demo — Indicative Overview.</strong> This demo illustrates one representative student journey through Salesforce Education Cloud. Features, functionality, and integrations available extend significantly beyond what is shown. Additional systems (SIS, LMS, ERP, payment gateways, telephony, document management, and more) can be fully integrated to create a complete 360&deg; view, eliminate manual processes, and automate the entire student lifecycle end-to-end. All data shown is sample and illustrative only.</span>
+    </div>
+
+    <!-- SLIDE NAV -->
+    <div class="slide-nav">
+      <button class="nav-btn" id="prev-btn" onclick="go(-1)" disabled>&#8592; Back</button>
+      <div class="snav-mid">
+        <div class="snav-lbl" id="snav-lbl"></div>
+        <div class="dots" id="dots"></div>
+      </div>
+      <button class="nav-btn" id="next-btn" onclick="go(1)">Next &#8594;</button>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:10px;color:#888;padding:4px 0;">
+    &copy; 2025 Think Beyond &nbsp;&#183;&nbsp; Powered by Salesforce Education Cloud &nbsp;&#183;&nbsp; Confidential &amp; Indicative
+  </div>
+</div>
+
+<script>
+var showNarr = false;
+function toggleNarr(){
+  showNarr = !showNarr;
+  document.getElementById('narr-panel').style.display = showNarr ? 'block' : 'none';
+  var btn = document.getElementById('narr-toggle-btn');
+  if(btn){ btn.classList.toggle('open', showNarr); }
+}
+
+var SLIDES = [
+{app:'Education Cloud',av:'AD',avbg:'#0176D3',
+appnav:['Home','Leads','Applications','Students','Alumni','Dashboards','Reports'],anav:'Home',
+paths:['Home'],omni:false,
+narr:{ch:'Chapter 1 of 12',hl:'Welcome — Meet the University',
+story:'King Fahd University is entering its biggest intake year. Leadership has just gone live on Salesforce Education Cloud — one connected platform that gives every department a real-time view of every student.\n\nThis tour follows Layla Hassan, an 18-year-old from Jeddah who dreams of studying Computer Science. We will watch her journey from the moment she first discovers the university on social media, all the way to her life as an alumna mentoring the next generation.',
+feature:'&#128161; Salesforce Education Cloud unifies marketing, admissions, student engagement, services, and alumni relations on one platform — one student record, every team connected.',
+action:'&#8594; The university leadership view is your starting point. Every metric is live, not a report run overnight. Click Next to begin Layla\'s story.'},
+agent:{role:'University AI Assistant',persona:'Ahmad Al-Dehaimi — University Leadership',
+chats:[{u:false,m:'Good morning Ahmad. Today you have 12 new at-risk student alerts, 3 pending admissions decisions, and your Spring 2025 recruitment campaign is tracking 8% above target. Where would you like to start?'}],
+btns:['Show at-risk students','Open admissions queue','Campaign performance']},
+main:()=>`
+<div class="kpi-g five">
+  ${[['4,821','Enrolled Students','&#8593; 12% YoY','#0176D3'],['1,203','Open Applications','&#8593; 8% this cycle','#CA8501'],['87%','Retention Rate','Target: 90%','#2E844A'],['94','At-Risk Students','Needs action today','#C23934'],['SAR 2.4M','Alumni Giving','&#8593; 22% YoY','#6B4FBB']].map(([n,l,t,c])=>`<div class="kpi" style="border-top-color:${c};"><div class="kpi-l">${l}</div><div class="kpi-n" style="color:${c};">${n}</div><div class="kpi-t" style="color:${c};">${t}</div></div>`).join('')}
+</div>
+<div class="jbar">
+  <div class="js js-done"><span class="js-dot">&#128227;</span>Marketing</div>
+  <div class="js js-done"><span class="js-dot">&#128100;</span>Recruitment</div>
+  <div class="js js-act"><span class="js-dot">&#128203;</span>Admissions</div>
+  <div class="js js-done"><span class="js-dot">&#127891;</span>Enrolment</div>
+  <div class="js js-pend"><span class="js-dot">&#128218;</span>Student Life</div>
+  <div class="js js-pend"><span class="js-dot">&#9889;</span>Services</div>
+  <div class="js js-dim"><span class="js-dot">&#128101;</span>Alumni</div>
+</div>
+<div class="two">
+  <div class="card"><div class="card-hdr">&#128203; Applications by Status<span class="bdg bdg-blue">1,203 total</span></div><div class="card-body">${[['Under Review','487','40%','#0176D3'],['Documents Pending','234','19%','#CA8501'],['Interview Scheduled','189','16%','#6B4FBB'],['Offer Issued','198','16%','#2E844A'],['Withdrawn','95','8%','#B0ADAB']].map(([l,n,p,c])=>`<div style="margin-bottom:9px;"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;"><span>${l}</span><strong style="color:${c};">${n}</strong></div><div class="prog"><div class="prog-f" style="width:${p};background:${c};"></div></div></div>`).join('')}</div></div>
+  <div class="card"><div class="card-hdr">&#9888; At-Risk Alerts<span class="bdg bdg-red">12 new</span></div><div class="card-body" style="padding:0;"><table class="lt"><thead><tr><th>Student</th><th>Risk</th><th>Trigger</th><th>Status</th></tr></thead><tbody>${[['Khalid Al-Mansour','&#128308; High','GPA 1.8 + 5 absences','Case Opened'],['Nora Al-Rashid','&#128992; Med','Missed advisor appt.','Nudge Sent'],['Turki Al-Shehri','&#128308; High','Financial hold active','Escalated'],['Sana Al-Mutairi','&#128992; Med','Drop in engagement','Monitoring']].map(([n,r,t,a])=>`<tr><td class="lnk">${n}</td><td style="font-size:10px;">${r}</td><td style="font-size:10px;">${t}</td><td><span class="bdg ${a==='Escalated'?'bdg-red':a.includes('Open')?'bdg-orange':'bdg-gray'}">${a}</span></td></tr>`).join('')}</tbody></table></div></div>
+</div>
+<div class="two">
+  <div class="card"><div class="card-hdr">&#128202; Recruitment Funnel — AY 2025</div><div class="card-body">${[['Enquiries','4,200','100%','#00A1E0'],['Leads Created','1,890','45%','#0176D3'],['Applications','1,203','29%','#6B4FBB'],['Offers Made','820','20%','#2E844A'],['Enrolled','634','15%','#2E844A']].map(([l,n,p,c])=>`<div style="margin-bottom:9px;"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;"><span>${l}</span><div><strong>${n}</strong> <span style="color:var(--mu);">(${p})</span></div></div><div class="prog"><div class="prog-f" style="width:${p};background:${c};"></div></div></div>`).join('')}</div></div>
+  <div class="card"><div class="card-hdr">&#9889; Live Activity</div><div class="card-body">${[['&#128231;','Layla Hassan — Application received','Agentforce &#183; 10 min ago','#EAF5FE'],['&#9888;','Khalid Al-Mansour — GPA alert triggered','Early Alert &#183; 1 hr ago','#FDECEA'],['&#9989;','22 offer letters auto-generated','Agentforce &#183; 2 hrs ago','#EEF8EB'],['&#128241;','WhatsApp: 3 enquiries auto-resolved','AI Agent &#183; 3 hrs ago','#EAF5FE']].map(([ic,t,s,bg])=>`<div class="tl"><div class="tl-ic" style="background:${bg};">${ic}</div><div class="tl-b"><div class="tl-t">${t}</div><div class="tl-s">${s}</div></div></div>`).join('')}</div></div>
+</div>`},
+
+{app:'Marketing Cloud',av:'MM',avbg:'#9B59B6',
+appnav:['Overview','Campaigns','Journeys','Email Studio','Segments','Reports'],anav:'Campaigns',
+paths:['Marketing Cloud','Campaigns'],omni:false,
+narr:{ch:'Chapter 2 of 12',hl:'Layla Discovers the University',
+story:'It\'s a Tuesday night. Layla is scrolling Instagram when a targeted ad appears — King Fahd University\'s Computer Science programme. She taps it, lands on the website, and fills in a 30-second enquiry form.\n\nIn that moment, Marketing Cloud creates her contact record, scores her enquiry at 84/100, and automatically enrols her in a personalised 5-touch nurture journey. The Marketing Manager, Mariam, never had to lift a finger.',
+feature:'&#127988; Marketing Cloud captures every enquiry from website, social media, WhatsApp, open days, and partner schools — auto-creating a lead, assigning a score, and launching a personalised journey. AI audience segmentation ensures the right message reaches the right student.',
+action:'&#8594; Layla receives a personalised welcome email within 60 seconds. A WhatsApp follow-up is scheduled for Day 3. Her score will update each time she engages.'},
+agent:{role:'Marketing AI Agent',persona:'Mariam Al-Malik — Marketing Manager',
+chats:[{u:false,m:'Mariam, the STEM Schools campaign is outperforming by 14%. Layla Hassan just filled in the website enquiry form — auto-created as a lead with score 84. Strong CS interest. Enrol her in the Undergraduate Nurture Journey?'},{u:true,m:'Yes — enrol her immediately.'},{u:false,m:'Done. Welcome email sent. WhatsApp follow-up scheduled Day 3.'}],
+btns:['View Layla\'s journey','Campaign ROI report','Segment by programme']},
+main:()=>`
+<div class="kpi-g four">
+  ${[['4,200','Total Enquiries','&#8593; 18% vs target','#0176D3'],['SAR 890K','Campaign Budget','68% utilised','#CA8501'],['6.8%','Enquiry Conversion','Target: 7%','#2E844A'],['SAR 212','Cost per Enquiry','&#8595; 14% vs last yr','#2E844A']].map(([n,l,t,c])=>`<div class="kpi" style="border-top-color:${c};"><div class="kpi-l">${l}</div><div class="kpi-n" style="color:${c};">${n}</div><div class="kpi-t" style="color:${c};">${t}</div></div>`).join('')}
+</div>
+<div class="two">
+  <div class="card"><div class="card-hdr">&#127988; Active Campaigns<span class="bdg bdg-blue">6 running</span></div><div class="card-body" style="padding:0;"><table class="lt"><thead><tr><th>Campaign</th><th>Type</th><th>Leads</th><th>Conv.</th></tr></thead><tbody>${[['Undergrad Open Day 2025','Event','342','12.4%'],['STEM Schools Outreach','Partner','218','14.1%'],['International PG Spring','Email','891','5.2%'],['WhatsApp Nurture Series','WhatsApp','1,204','9.8%'],['Google & Meta Paid Ads','Digital','2,340','3.1%'],['Agent Partner Network','B2B','456','14.2%']].map(([n,t,l,c])=>`<tr><td class="lnk">${n}</td><td><span class="bdg bdg-gray">${t}</span></td><td>${l}</td><td><strong style="color:#2E844A;">${c}</strong></td></tr>`).join('')}</tbody></table></div></div>
+  <div>
+    <div class="card" style="margin-bottom:10px;"><div class="card-hdr">Layla's Journey — Auto-Enrolled<span class="bdg bdg-green">Live</span></div><div class="card-body">${[['Day 1','Welcome email + CS brochure','Sent &#9989;'],['Day 3','WhatsApp — open day invite','Scheduled'],['Day 7','Personalised programme video','Scheduled'],['Day 14','Scholarship eligibility info','Scheduled'],['Day 21','Application link + deadline','Scheduled']].map(([d,a,s])=>`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:11px;"><span style="background:var(--sf);color:white;border-radius:10px;padding:1px 7px;font-weight:700;flex-shrink:0;font-size:9px;">${d}</span><span style="flex:1;">${a}</span><span class="bdg ${s.includes('&#9989;')?'bdg-green':'bdg-gray'}" style="font-size:9px;">${s}</span></div>`).join('')}</div></div>
+    <div class="card"><div class="card-hdr">&#128225; Lead Sources</div><div class="card-body">${[['Digital Ads','38%',38],['WhatsApp','22%',22],['Partner Schools','14%',14],['Open Days','12%',12],['Website Organic','8%',8],['Call Centre','6%',6]].map(([l,p,v])=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;font-size:11px;"><span style="flex:0 0 120px;">${l}</span><div class="prog" style="flex:1;"><div class="prog-f" style="width:${v*2.4}%;background:#0176D3;"></div></div><strong style="min-width:28px;text-align:right;">${p}</strong></div>`).join('')}</div></div>
+  </div>
+</div>`},
+
+{app:'Education Cloud',av:'RO',avbg:'#00A1E0',
+appnav:['Home','Leads','Applications','Students','Alumni','Reports'],anav:'Leads',
+paths:['Leads','My Open Leads'],omni:true,
+narr:{ch:'Chapter 3 of 12',hl:'Layla Becomes a Lead',
+story:'Three days later, Layla opens the WhatsApp message and registers for the Open Day through the portal. Her lead score jumps from 84 to 97. She moves to the top of Omar\'s recruitment Kanban automatically.\n\nOmar — the Recruitment Officer — starts his morning to find Layla highlighted as his top priority. Agentforce has already prepared a personalised call brief with her academic profile, interests, and talking points. He clicks "Schedule Call" and a calendar invite goes to both of them.',
+feature:'&#128100; Lead Scoring + Agentforce automatically ranks every enquiry, routes them to the right officer, and prepares AI call briefs. Duplicate checking, assignment rules, and follow-up tasks are all automated.',
+action:'&#8594; Omar calls Layla tomorrow at 11am. After the call, he logs outcomes in one click and Agentforce updates the lead score and next steps automatically.'},
+agent:{role:'Recruitment AI Agent',persona:'Omar Al-Rashid — Recruitment Officer',
+chats:[{u:false,m:'Omar, Layla Hassan registered for the Open Day — score now 97. Top prospect this week. I\'ve prepared her call brief. Predicted 84% chance she applies. Schedule the call?'},{u:true,m:'Yes — schedule for tomorrow 11am.'},{u:false,m:'Done. Calendar invite sent to both of you. Call brief attached to her record.'}],
+btns:['View Layla\'s record','All hot leads (score > 85)','My task list today']},
+main:()=>`
+<div class="kanban" style="margin-bottom:10px;">
+  ${[['New Enquiry','#B0ADAB',[['Hessa Al-Sayed','Engineering'],['Bader Al-Harbi','Business'],['Dina Al-Mutairi','Law']]],['Contacted','#0176D3',[['Sara Al-Ghamdi','Medicine'],['Fahad Al-Qahtani','CS']]],['Open Day Reg.','#9B59B6',[['Layla Hassan','CS — Score: 97 &#11088;'],['Ahmed Al-Zahra','Architecture']]],['App Started','#2E844A',[['Turki Al-Malki','Engineering'],['Lina Al-Harbi','Medicine']]],['App Submitted','#CA8501',[['Basil Al-Aqeel','CS'],['Huda Al-Hamdan','Business']]]].map(([s,c,l])=>`<div class="kb"><div class="kb-h"><span style="color:${c};">&#9679; ${s}</span><span style="background:${c};color:white;border-radius:8px;padding:1px 6px;font-size:9px;">${l.length}</span></div>${l.map(([n,p])=>`<div class="kc" style="${n==='Layla Hassan'?'border-left-color:#0176D3;background:#F0F7FF;':''}"><div class="kc-n" style="${n==='Layla Hassan'?'color:#0176D3;':''}">${n==='Layla Hassan'?'&#11088; '+n:n}</div><div class="kc-s">${p}</div></div>`).join('')}</div>`).join('')}
+</div>
+<div class="two">
+  <div class="card"><div class="card-hdr">&#11088; Top Leads — AI Ranked<span class="bdg bdg-purple">AI Scored</span></div><div class="card-body" style="padding:0;"><table class="lt"><thead><tr><th>Name</th><th>Programme</th><th>Score</th><th>Intent</th><th>Next Action</th></tr></thead><tbody>${[['Layla Hassan','Computer Science','97','&#128293; Hot','Call Tomorrow 11am'],['Ahmed Al-Ghamdi','Engineering','92','&#128293; Hot','Follow-up email'],['Noura Al-Zahrani','Medicine','88','&#128308; Warm','Open Day confirmed'],['Mohammed Al-Qahtani','Business','82','&#128308; Warm','WhatsApp sent'],['Lama Al-Dosari','Architecture','74','&#128992; Nurture','Journey Day 7']].map(([n,p,sc,st,nx])=>`<tr><td class="lnk" style="${n==='Layla Hassan'?'font-weight:800;':''}">${n}</td><td>${p}</td><td><strong style="color:${+sc>90?'#C23934':+sc>80?'#CA8501':'#2E844A'};">${sc}</strong></td><td style="font-size:10px;">${st}</td><td style="font-size:10px;color:var(--mu);">${nx}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="card"><div class="card-hdr">&#128336; Timeline — Layla Hassan</div><div class="card-body">${[['&#128231;','Welcome email sent — CS brochure','Agentforce','12 Jan'],['&#128247;','Instagram ad click — UTM tracked','Marketing Cloud','12 Jan'],['&#128203;','Website enquiry form submitted','Web-to-Lead','12 Jan'],['&#9989;','Lead auto-created — score: 84','System','12 Jan'],['&#128241;','WhatsApp: "Is there an open day?"','Inbound','15 Jan'],['&#128197;','Open Day registration — score 97','Portal','15 Jan'],['&#128222;','Call scheduled: Omar &#8594; Layla 11am','Agentforce','16 Jan']].map(([ic,t,s,d])=>`<div class="tl"><div class="tl-ic" style="background:#EAF5FE;">${ic}</div><div class="tl-b"><div class="tl-t">${t}</div><div class="tl-s">${s}</div></div><div class="tl-d">${d}</div></div>`).join('')}</div></div>
+</div>`},
+
+{app:'Education Cloud',av:'AO',avbg:'#2E844A',
+appnav:['Home','Applications','Decisions','Offers','Documents','Reports'],anav:'Applications',
+paths:['Applications','APP-2025-01188 — Layla Hassan'],omni:false,
+narr:{ch:'Chapter 4 of 12',hl:'Layla Applies — Agentforce Reviews Her Overnight',
+story:'After the Open Day, Layla submits her full application that evening — uploading all 6 documents, writing her personal statement, and paying the SAR 500 fee.\n\nBy the time Dr. Sara arrives the next morning, Agentforce has already run a full document verification, checked all 6 requirements, scored the application at 97/100, and placed a recommendation on her desk: "Strong Admit." Dr. Sara has never even opened a PDF.',
+feature:'&#128203; AI Document Verification checks every uploaded document against requirements automatically. Eligibility rules fire instantly. Admissions officers see a pre-ranked decision queue with AI recommendations — they focus on decisions, not administration.',
+action:'&#8594; Dr. Sara clicks "Issue Conditional Offer." Agentforce drafts the personalised offer letter, routes it to faculty review, and schedules a follow-up for 48 hours.'},
+agent:{role:'Admissions AI Agent',persona:'Dr. Sara Al-Malik — Admissions Officer',
+chats:[{u:false,m:'Dr. Sara, Layla Hassan\'s application is complete. All 6 documents verified. AI score: 97/100. Top 3% of CS applicants this cycle. Recommendation: Conditional offer + merit scholarship. Draft the offer letter?'},{u:true,m:'Yes — draft and route to Dr. Al-Fahad for faculty review.'},{u:false,m:'Done. Faculty review request sent. Expected by tomorrow 9am.'}],
+btns:['Issue conditional offer','Assign faculty reviewer','View full applicant pool']},
+main:()=>`
+<div class="rec-hdr">
+  <div class="rec-hdr-body"><div class="rec-av" style="background:#0176D3;">LH</div><div class="rec-name-block"><div class="rec-name">Layla Hassan Al-Qahtani</div><div class="rec-meta">APP-2025-01188 &#183; B.Sc. Computer Science &#183; Fall 2025 &#183; Submitted 18 Jan 2025 at 9:42 PM</div><div class="rec-badges"><span class="bdg bdg-orange bdg-dot bdg-dot-orange">Under Review</span><span class="bdg bdg-purple">&#11088; AI Score: 97/100</span><span class="bdg bdg-gold">Merit Scholarship Eligible</span><span class="bdg bdg-teal">Docs: 6/6 &#9989;</span></div></div></div>
+  <div class="rec-highlights"><div class="rec-hl"><label>High School GPA</label><div class="v gr">4.92 / 5.00</div></div><div class="rec-hl"><label>SAT Score</label><div class="v">1,520</div></div><div class="rec-hl"><label>Programme</label><div class="v">B.Sc. Computer Science</div></div><div class="rec-hl"><label>Admissions Officer</label><div class="v lnk">Dr. Sara Al-Malik</div></div><div class="rec-hl"><label>Faculty Review</label><div class="v or">Pending — Dr. Al-Fahad</div></div><div class="rec-hl"><label>Days in Stage</label><div class="v">6 days</div></div></div>
+  <div class="rec-actions"><button class="btn btn-suc">&#10003; Issue Conditional Offer</button><button class="btn btn-neut">&#128197; Schedule Interview</button><button class="btn btn-neut">&#128231; Request Documents</button><button class="btn btn-neut">&#128101; Assign Reviewer</button><button class="btn btn-destr">&#10005; Decline</button></div>
+</div>
+<div class="two" style="margin-top:10px;">
+  <div class="card"><div class="card-hdr">&#128204; Document Checklist<span class="bdg bdg-green">6/6 Complete</span></div><div class="card-body">${[['High School Transcripts','AI-verified &#9989;'],['National ID (Iqama)','Verified &#9989;'],['Personal Statement','Reviewed &#9989;'],['Two Reference Letters','Both received &#9989;'],['Medical Certificate','Uploaded &#9989;'],['Application Fee SAR 500','Confirmed &#9989;']].map(([d,s])=>`<div class="chk"><div class="chk-ic" style="background:#D6EED9;color:#0A4023;">&#10003;</div><div style="flex:1;"><div style="font-size:11px;font-weight:700;">${d}</div><div style="font-size:10px;color:var(--mu);">${s}</div></div></div>`).join('')}</div></div>
+  <div class="card"><div class="card-hdr">&#128202; CS Programme — Applicant Queue</div><div class="card-body" style="padding:0;"><table class="lt"><thead><tr><th>Applicant</th><th>Score</th><th>Rec.</th><th>Status</th></tr></thead><tbody>${[['Layla Hassan','97','Admit','Under Review'],['Ahmed Al-Ghamdi','92','Admit','Faculty Review'],['Noura Al-Zahrani','88','Admit','Offer Issued'],['Mohammed Al-Harbi','81','Waitlist','Docs Pending'],['Lama Al-Qahtani','76','Review','Interview Sched.']].map(([n,sc,r,st])=>`<tr><td class="lnk" style="${n.includes('Layla')?'font-weight:800;':''}">${n}</td><td><strong style="color:${+sc>90?'#2E844A':'#CA8501'};">${sc}</strong></td><td><span class="bdg ${r==='Admit'?'bdg-green':r==='Waitlist'?'bdg-orange':'bdg-gray'}">${r}</span></td><td style="font-size:10px;">${st}</td></tr>`).join('')}</tbody></table></div></div>
+</div>`},
+
+{app:'Education Cloud',av:'AO',avbg:'#2E844A',
+appnav:['Home','Offers','Scholarships','Enrolment','Onboarding','Reports'],anav:'Offers',
+paths:['Offers','OFR-2025-01188 — Layla Hassan'],omni:false,
+narr:{ch:'Chapter 5 of 12',hl:'Layla Gets Her Offer — and Says Yes',
+story:'Two days later, Layla\'s phone lights up. The offer email is beautiful — her name, her programme, her scholarship of SAR 12,000 per year. One button: Accept. She calls her mother, they cry happy tears, then she accepts online that evening.\n\nIn that single click, Salesforce triggers a cascade: student ID created, SIS record synced via MuleSoft, scholarship allocated in ERP, orientation booked, welcome pack sent. No admin team touched any step.',
+feature:'&#127891; Automated Enrolment Workflows fire the moment an offer is accepted: student ID creation, SIS sync via MuleSoft, scholarship allocation in ERP, orientation booking, and a personalised welcome journey — all without a single manual action.',
+action:'&#8594; Layla receives her onboarding checklist through the student portal and WhatsApp. Her life as a student begins September 3rd.'},
+agent:{role:'Admissions AI Agent',persona:'Dr. Sara Al-Malik — Admissions Officer',
+chats:[{u:false,m:'Layla Hassan accepted her offer at 9:17 PM. Deposit SAR 2,000 confirmed. Student ID STU-2025-01188 created. SIS synced. Merit Scholarship SAR 12,000/yr allocated. Orientation Sept 3 booked. Welcome pack sent. All done automatically.'}],
+btns:['View student record','Confirm scholarship','Send welcome pack']},
+main:()=>`
+<div class="rec-hdr">
+  <div class="rec-hdr-body"><div class="rec-av" style="background:#2E844A;">LH</div><div class="rec-name-block"><div class="rec-name">Layla Hassan Al-Qahtani — Offer Accepted</div><div class="rec-meta">OFR-2025-01188 &#183; B.Sc. Computer Science &#183; Fall 2025</div><div class="rec-badges"><span class="bdg bdg-green bdg-dot bdg-dot-green">Accepted</span><span class="bdg bdg-gold">Merit Scholarship SAR 12,000/yr</span><span class="bdg bdg-blue">ID: STU-2025-01188</span></div></div></div>
+  <div class="rec-highlights"><div class="rec-hl"><label>Offer Issued</label><div class="v">20 Jan 2025</div></div><div class="rec-hl"><label>Accepted</label><div class="v gr">22 Jan — 9:17 PM</div></div><div class="rec-hl"><label>Deposit</label><div class="v gr">SAR 2,000 &#9989;</div></div><div class="rec-hl"><label>SIS Record</label><div class="v gr">Synced via MuleSoft &#9989;</div></div><div class="rec-hl"><label>Orientation</label><div class="v">Sept 3, 2025</div></div></div>
+</div>
+<div class="two" style="margin-top:10px;">
+  <div class="card"><div class="card-hdr">&#9889; Enrolment Automation — All Steps Completed</div><div class="card-body">${[['Offer accepted — trigger fired','22 Jan 9:17 PM'],['Deposit received SAR 2,000','22 Jan 9:18 PM'],['Student ID created: STU-2025-01188','22 Jan 9:18 PM'],['SIS record synced via MuleSoft','22 Jan 9:18 PM'],['Merit Scholarship allocated in ERP','22 Jan 9:19 PM'],['Student portal access provisioned','22 Jan 9:19 PM'],['Welcome email + pack dispatched','22 Jan 9:19 PM'],['Orientation booked — Sept 3, 2025','22 Jan 9:20 PM'],['Academic advisor assigned','22 Jan 9:20 PM']].map(([s,t])=>`<div class="chk"><div class="chk-ic" style="background:#D6EED9;color:#0A4023;">&#10003;</div><div style="flex:1;font-size:11px;font-weight:600;">${s}</div><div style="font-size:10px;color:var(--mu);white-space:nowrap;">${t}</div></div>`).join('')}</div></div>
+  <div class="card"><div class="card-hdr">&#128203; Onboarding Checklist</div><div class="card-body">${[['Enrolment deposit paid','done'],['Student ID issued','done'],['SIS record created','done'],['Scholarship confirmation sent','done'],['Complete student profile on portal','pend'],['Upload final HS certificate','pend'],['Orientation registration','pend'],['Sign enrolment contract','pend']].map(([d,t])=>`<div class="chk"><div class="chk-ic" style="background:${t==='done'?'#D6EED9':'#FDEFD0'};color:${t==='done'?'#0A4023':'#5C3600'};">${t==='done'?'&#10003;':'&#9201;'}</div><div style="flex:1;font-size:11px;">${d}</div><span class="bdg ${t==='done'?'bdg-green':'bdg-orange'}">${t==='done'?'Complete':'Pending'}</span></div>`).join('')}</div></div>
+</div>`},
+
+{app:'Education Cloud',av:'SS',avbg:'#9B59B6',
+appnav:['Home','Students','Cases','Appointments','Retention','Reports'],anav:'Students',
+paths:['Students','STU-2025-01188 — Layla Hassan'],omni:false,
+narr:{ch:'Chapter 6 of 12',hl:'Year 2 — Layla is Struggling, and the System Notices',
+story:'It\'s the second semester of Year 2. Layla is finding CS 301 (Algorithms) very difficult. She\'s missed 4 lectures, her grade has dropped to C+, and she hasn\'t opened the LMS in six days. She hasn\'t told anyone.\n\nBut Salesforce has noticed. The system automatically correlates her SIS attendance, LMS activity from Blackboard, advisor interaction history, and case records. Her engagement score drops from 88 to 62. Her risk score rises to 74. An early alert fires, and Dr. Reem receives a full briefing before she\'s even aware Layla is struggling.',
+feature:'&#128196; Student 360 + Early Alert combines academic data (SIS), LMS signals, attendance, case history, and financial status into a single AI-scored profile. Advisors receive proactive alerts with full context — enabling intervention before students withdraw.',
+action:'&#8594; Dr. Reem reviews the AI-drafted WhatsApp message, sends it, and books Layla into CS 301 tutoring. Agentforce creates a care plan and monitors her engagement score daily.'},
+agent:{role:'Advisor AI Assistant',persona:'Dr. Reem Al-Zahrani — Academic Advisor',
+chats:[{u:false,m:'Dr. Reem, Layla Hassan\'s engagement dropped 18 points this week. CS 301 attendance 58%. LMS inactive 6 days. Risk score: 74. Matches early withdrawal patterns. Care plan recommended. I\'ve drafted a WhatsApp message for your review.'},{u:true,m:'Open the care plan and send the WhatsApp.'},{u:false,m:'Care plan created. WhatsApp sent. Follow-up reminder set for Monday.'}],
+btns:['Review care plan','Book tutoring session','Monitor engagement']},
+main:()=>`
+<div class="rec-hdr">
+  <div class="rec-hdr-body"><div class="rec-av" style="background:#9B59B6;">LH</div><div class="rec-name-block"><div class="rec-name">Layla Hassan Al-Qahtani</div><div class="rec-meta">STU-2025-01188 &#183; B.Sc. Computer Science, Year 2 &#183; Advisor: Dr. Reem Al-Zahrani</div><div class="rec-badges"><span class="bdg bdg-green bdg-dot bdg-dot-green">Enrolled — Active</span><span class="bdg bdg-red bdg-dot bdg-dot-red">Early Alert — At Risk</span><span class="bdg bdg-orange">Care Plan: Open</span></div></div><div style="display:flex;gap:10px;flex-shrink:0;"><div class="ring-wrap"><div class="ring-lbl">Engagement</div><div class="ring" style="color:#CA8501;border-color:#CA8501;">62</div></div><div class="ring-wrap"><div class="ring-lbl">Risk Score</div><div class="ring" style="color:#C23934;border-color:#C23934;">74</div></div></div></div>
+  <div class="rec-highlights"><div class="rec-hl"><label>Current GPA</label><div class="v or">2.74</div></div><div class="rec-hl"><label>CS 301 Attend.</label><div class="v re">58%</div></div><div class="rec-hl"><label>LMS Last Login</label><div class="v re">6 days ago</div></div><div class="rec-hl"><label>Scholarship Status</label><div class="v or">At risk — GPA threshold</div></div><div class="rec-hl"><label>Open Cases</label><div class="v lnk">2 open</div></div></div>
+  <div class="rec-actions"><button class="btn btn-prim">&#128197; Book Appointment</button><button class="btn btn-neut">&#128241; Send WhatsApp</button><button class="btn btn-neut">&#128203; View Care Plan</button><button class="btn btn-neut">&#129302; Ask Agentforce</button></div>
+</div>
+<div class="two" style="margin-top:10px;">
+  <div class="card"><div class="card-hdr">&#127979; Current Courses — Spring 2025</div><div class="card-body" style="padding:0;"><table class="lt"><thead><tr><th>Course</th><th>Grade</th><th>Attend.</th><th>LMS</th></tr></thead><tbody>${[['CS 301 — Algorithms','C+ &#9888;','58%','Low'],['CS 315 — Databases','B','82%','Medium'],['MATH 302 — Discrete Math','B-','74%','Medium'],['ENG 201 — Tech Writing','A-','91%','High'],['CS 320 — Networks','B+','85%','High']].map(([c,g,a,l])=>`<tr><td style="color:#0176D3;">${c}</td><td style="font-weight:700;color:${g.includes('&#9888;')?'#C23934':g.startsWith('A')?'#2E844A':'#181818'};">${g}</td><td style="color:${+a<70?'#C23934':+a<80?'#CA8501':'#2E844A'};">${a}</td><td><span class="bdg ${l==='Low'?'bdg-red':l==='Medium'?'bdg-orange':'bdg-green'}">${l}</span></td></tr>`).join('')}</tbody></table></div></div>
+  <div class="card"><div class="card-hdr">&#128336; Student Timeline</div><div class="card-body">${[['&#9888;','Early Alert — CS 301 grade + attendance','Agentforce','2 days ago','#FDECEA'],['&#128203;','Care Plan Created — Academic Support','Dr. Reem Al-Zahrani','Today','#EEF8EB'],['&#128241;','WhatsApp sent: personalised outreach','Agentforce (approved)','Today','#EAF5FE'],['&#9989;','Task: Submit housing contract — done','Layla self-service','1 week ago','#EEF8EB'],['&#128231;','Email: Scholarship renewal reminder','Finance Office','2 weeks ago','#EAF5FE']].map(([ic,t,s,d,bg])=>`<div class="tl"><div class="tl-ic" style="background:${bg};">${ic}</div><div class="tl-b"><div class="tl-t">${t}</div><div class="tl-s">${s}</div></div><div class="tl-d">${d}</div></div>`).join('')}</div></div>
+</div>`},
+
+{app:'Agentforce',av:'AF',avbg:'#16325C',
+appnav:['Agent Console','Active Sessions','Use Cases','Performance','Settings'],anav:'Agent Console',
+paths:['Agentforce','Academic Advisor Agent — Live Sessions'],omni:false,
+narr:{ch:'Chapter 7 of 12',hl:'Layla Talks to the AI at Midnight',
+story:'It\'s 11:45 PM. Layla is panicking about CS 301 and considering dropping the course. She opens the student portal chatbot. Agentforce recognises her, pulls her full record, and sees her scholarship is at risk if she drops below 15 credits.\n\nInstead of just answering the question, the AI explains the consequences, finds a tutoring session for 9am tomorrow, creates a personalised 4-week study plan, and talks her out of dropping the course — citing that 78% of students with similar profiles who joined tutoring improved by at least one letter grade. Twenty minutes later she\'s in bed, with a plan, feeling better.',
+feature:'&#129302; Agentforce Autonomous Agents have full access to the student\'s live Salesforce record. They handle advising, document requests, registration, financial queries, and early alert interventions 24/7 — and escalate to a human only when genuinely needed.',
+action:'&#8594; Agentforce books the tutoring session, sends the study plan, and creates a follow-up task for Dr. Reem for Monday morning — all without waking anyone up.'},
+agent:{role:'Agentforce Platform',persona:'Live Agent Activity',
+chats:[{u:false,m:'847 concurrent sessions active. 94% AI-resolved. Layla Hassan\'s session is live now — she asked about dropping CS 301. I identified the scholarship risk, redirected her to tutoring. She agreed. Session resolved. Care plan updated.'}],
+btns:['View Layla\'s session','Early alert queue (34)','Performance dashboard']},
+main:()=>`
+<div class="kpi-g five">
+  ${[['847','Active Sessions Now','94% AI-resolved','#0176D3'],['2.3m','Avg Response Time','vs 4 hrs human','#2E844A'],['91%','Student CSAT','Satisfaction score','#2E844A'],['34','Proactive Nudges','Early alert today','#CA8501'],['SAR 45','Saved / Interaction','vs human handling','#6B4FBB']].map(([n,l,t,c])=>`<div class="kpi" style="border-top-color:${c};"><div class="kpi-l">${l}</div><div class="kpi-n" style="color:${c};">${n}</div><div class="kpi-t" style="color:${c};">${t}</div></div>`).join('')}
+</div>
+<div class="two">
+  <div class="card"><div class="card-hdr">&#128172; Live Session — Layla Hassan<span class="bdg bdg-green">Resolved</span></div><div class="card-body" style="background:#F8F8FC;padding:10px;"><div style="margin-bottom:6px;"><div class="chat-a">Hi Layla. I see you're considering dropping CS 301. Dropping this course would bring your credits to 12, below the 15-credit minimum for your Merit Scholarship. Would you like to see some alternatives?</div><div class="chat-meta">Agentforce AI &#183; 11:47 PM</div></div><div style="margin-bottom:6px;"><div class="chat-u">I didn't know that. What are my options?</div><div class="chat-meta r">Layla &#183; 11:48 PM</div></div><div style="margin-bottom:6px;"><div class="chat-a">I recommend: (1) Stay in CS 301 and join tutoring tomorrow 9am Room 204 (2) Book urgent session with Dr. Reem (3) I'll create a personalised 4-week study plan. 78% of similar students improved by one letter grade after tutoring. Shall I arrange all three?</div><div class="chat-meta">Agentforce AI &#183; 11:48 PM</div></div><div style="margin-bottom:6px;"><div class="chat-u">Yes please — do all of that.</div><div class="chat-meta r">Layla &#183; 11:49 PM</div></div><div><div class="chat-a">Done. Tutoring booked tomorrow 9am Room 204. Study plan sent. Task created for Dr. Reem on Monday. You've got this, Layla.</div><div class="chat-meta">Agentforce AI &#183; 11:49 PM</div></div></div></div>
+  <div class="card"><div class="card-hdr">&#9889; Agentforce Use Cases — Education Cloud</div><div class="card-body">${[['&#127891;','Academic Advising','Course selection, graduation audits, GPA monitoring','847 today'],['&#128203;','Admissions Agent','Document check, eligibility scoring, status updates','234 today'],['&#128176;','Financial Aid','Scholarship queries, payment plans, fee holds','189 today'],['&#9888;','Early Alert','Risk detection, care plans, proactive nudges','34 today'],['&#127891;','Student Services','Transcripts, visa letters, IT support, housing','312 today'],['&#128101;','Alumni Engagement','Events, giving campaigns, mentorship matching','145 today']].map(([ic,t,d,c])=>`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr);"><span style="font-size:13px;">${ic}</span><div style="flex:1;"><div style="font-size:11px;font-weight:700;">${t}</div><div style="font-size:10px;color:var(--mu);">${d}</div></div><span style="font-size:10px;color:var(--sf);font-weight:700;white-space:nowrap;">${c}</span></div>`).join('')}</div></div>
+</div>`},
+
+{app:'Service Cloud',av:'SC',avbg:'#0B827C',
+appnav:['Service Console','Cases','Queue','Knowledge','Reports'],anav:'Service Console',
+paths:['Service Cloud','Case CS-4521 — Layla Hassan'],omni:true,
+narr:{ch:'Chapter 8 of 12',hl:'Layla Needs Transcripts — Done in 4 Minutes',
+story:'It\'s Year 3. Layla applies for a summer internship at Aramco Digital. She needs three official transcripts urgently — deadline in 6 days. She logs into the student portal, submits the request in 2 minutes, and gets a live case number with a progress tracker.\n\nBehind the scenes, Omni-Channel routes the case to Khalid — the right advisor. Agentforce pre-fills the transcript form and flags the deadline. Khalid reviews for 30 seconds, clicks "Generate and Send." Layla receives a WhatsApp confirmation within minutes. Total handling time: 4 minutes.',
+feature:'&#9889; Service Cloud + Agentforce manages every student service request — transcripts, visa letters, financial queries, housing, counselling — with SLA tracking, AI-suggested resolutions, and automated case updates to the student in real time.',
+action:'&#8594; SLA met with 5 days to spare. Layla gets the Aramco internship. Total time: 4 minutes. This is what Student Services looks like on Salesforce.'},
+agent:{role:'Service AI Agent',persona:'Khalid Ibrahim — Student Services',
+chats:[{u:false,m:'Khalid, Layla Hassan submitted a transcript request — 3 copies for Aramco Digital. Deadline: 6 days. Case CS-4521 created (High Priority). Transcript form pre-filled. One click to approve.'},{u:true,m:'Approved — generate and send now.'},{u:false,m:'Transcripts generated and emailed to Layla. WhatsApp confirmation sent. Case closed. SLA: Met. Total time: 4 minutes.'}],
+btns:['View Case CS-4521','Open cases queue','Generate transcript report']},
+main:()=>`
+<div class="two">
+  <div>
+    <div class="card" style="margin-bottom:10px;"><div class="card-hdr">&#128204; Case CS-4521 — Transcript Request<span class="bdg bdg-green">Resolved</span></div><div class="card-body"><div class="fg fg-2" style="margin-bottom:10px;"><div class="f"><label>Student</label><div class="fv lnk">Layla Hassan</div></div><div class="f"><label>Request</label><div class="fv">Official Transcript &#215; 3</div></div><div class="f"><label>Purpose</label><div class="fv">Internship — Aramco Digital</div></div><div class="f"><label>External Deadline</label><div class="fv re" style="font-weight:700;">26 Jan 2025 (6 days)</div></div><div class="f"><label>Channel</label><div class="fv">Student Portal (self-service)</div></div><div class="f"><label>SLA Target</label><div class="fv gr">3 business days &#9989;</div></div><div class="f"><label>Assigned To</label><div class="fv lnk">Khalid Ibrahim</div></div><div class="f"><label>Handle Time</label><div class="fv gr">4 minutes &#9989;</div></div></div><div style="display:flex;gap:6px;"><button class="btn btn-suc btn-sm">&#9989; Dispatched</button><button class="btn btn-neut btn-sm">&#128231; View Confirmation</button></div></div></div>
+    <div class="card"><div class="card-hdr">&#128336; Case Timeline</div><div class="card-body">${[['&#128203;','Case created via student portal','Self-service','20 Jan 9:14 AM'],['&#9889;','Auto-routed to Khalid — High Priority','Omni-Channel','20 Jan 9:14 AM'],['&#129302;','AI pre-filled transcript form','Agentforce','20 Jan 9:15 AM'],['&#9989;','Approved and generated','Khalid Ibrahim','20 Jan 9:18 AM'],['&#128241;','WhatsApp + email confirmation sent','Automated','20 Jan 9:18 AM'],['&#10003;','Case closed — SLA met','System','20 Jan 9:19 AM']].map(([ic,t,s,d])=>`<div class="tl"><div class="tl-ic" style="background:#EAF5FE;">${ic}</div><div class="tl-b"><div class="tl-t">${t}</div><div class="tl-s">${s}</div></div><div class="tl-d">${d}</div></div>`).join('')}</div></div>
+  </div>
+  <div>
+    <div class="kpi-g" style="grid-template-columns:1fr 1fr;margin-bottom:10px;">${[['312','Open Cases','#0176D3'],['94%','SLA Compliance','#2E844A'],['4.2hr','Avg Handle Time','#CA8501'],['91%','First Contact Res.','#6B4FBB']].map(([n,l,c])=>`<div class="kpi" style="border-top-color:${c};"><div class="kpi-l">${l}</div><div class="kpi-n" style="color:${c};">${n}</div></div>`).join('')}</div>
+    <div class="card"><div class="card-hdr">&#128203; Open Case Queue</div><div class="card-body" style="padding:0;"><table class="lt"><thead><tr><th>Student</th><th>Type</th><th>Priority</th><th>SLA</th></tr></thead><tbody>${[['Layla Hassan','Transcript','High','&#9989; Met'],['Khalid Al-Mansour','Financial Hold','High','&#9888; Risk'],['Noura Al-Rashid','Visa Letter','Medium','&#9989; On SLA'],['Ahmed Al-Ghamdi','Course Withdrawal','Medium','&#9989; On SLA'],['Turki Al-Shehri','Housing Request','Low','&#9989; On SLA']].map(([n,t,p,s])=>`<tr><td class="lnk">${n}</td><td>${t}</td><td><span class="bdg ${p==='High'?'bdg-red':p==='Medium'?'bdg-orange':'bdg-gray'}">${p}</span></td><td style="font-size:11px;">${s}</td></tr>`).join('')}</tbody></table></div></div>
+    <div class="card" style="margin-top:10px;"><div class="card-hdr">&#128218; Knowledge Base — Top Articles</div><div class="card-body">${[['How to request an official transcript','1,240 views'],['Visa support letter — requirements','890 views'],['Course withdrawal deadlines','756 views'],['Scholarship renewal criteria 2025','621 views']].map(([t,v])=>`<div style="padding:5px 0;border-bottom:1px solid var(--bdr);font-size:11px;"><div class="lnk">${t}</div><div style="font-size:10px;color:var(--mu);">${v}</div></div>`).join('')}</div></div>
+  </div>
+</div>`},
+
+{app:'Experience Cloud',av:'LH',avbg:'#9B59B6',
+appnav:['My Dashboard','My Courses','Services','Events','AI Advisor'],anav:'My Dashboard',
+paths:['Student Portal','Layla Hassan — My Dashboard'],omni:false,
+narr:{ch:'Chapter 9 of 12',hl:'Layla\'s World — The Student Self-Service Portal',
+story:'This is the world Layla sees. A branded student portal — built on Salesforce Experience Cloud — available in Arabic and English, on desktop and mobile. From here she checks grades, submits service requests, chats with the AI advisor, books appointments, pays fees, and tracks every open case.\n\nShe never needs to call an office or join a queue for routine requests. Every tile on her dashboard is personalised to her situation — her attendance alert, her transcript status, her upcoming advisor meeting — all in one place.',
+feature:'&#127760; Experience Cloud Student Portal gives every student a personalised, branded self-service hub — connected to their live Salesforce record. Available in Arabic and English, mobile-first, with Agentforce embedded for instant AI support 24/7.',
+action:'&#8594; Every student sees a different dashboard — personalised based on their risk level, deadlines, open cases, and AI recommendations in real time.'},
+agent:{role:'Portal AI Assistant',persona:'Layla Hassan — Student View',
+chats:[{u:false,m:'Hi Layla! Tutoring session confirmed — tomorrow 9am Room 204. Study plan is in your portal. Transcript dispatched today for the Aramco application. Anything else tonight?'},{u:true,m:'Set a reminder for the internship deadline in 5 days.'},{u:false,m:'Done — reminder set for 20 Jan at 8am on WhatsApp and email. Good luck!'}],
+btns:['View my study plan','Check transcript status','Book advisor appointment']},
+main:()=>`
+<div class="portal-hero">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div><div style="color:rgba(255,255,255,0.55);font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:3px;">King Fahd University &#183; Student Portal</div><div style="color:white;font-size:17px;font-weight:800;margin-bottom:2px;">Welcome back, Layla &#128075;</div><div style="color:rgba(255,255,255,0.65);font-size:11px;">Spring 2025 &#183; Computer Science Year 2 &#183; GPA: 2.74 &#9888; Action needed</div></div>
+    <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 16px;text-align:center;"><div style="color:white;font-size:20px;font-weight:800;">31</div><div style="color:rgba(255,255,255,0.65);font-size:10px;">Days to Midterms</div></div>
+  </div>
+  <div class="portal-nav" style="margin-top:12px;">${['My Dashboard','My Courses','Financial Aid','Services','Events','AI Advisor'].map((t,i)=>`<div class="portal-nav-item${i===0?' on':''}">${t}</div>`).join('')}</div>
+</div>
+<div style="background:#F5F6FA;border:1px solid var(--bdr);border-top:none;border-radius:0 0 6px 6px;padding:12px;margin-bottom:10px;">
+  <div class="three" style="margin-bottom:10px;">
+    <div style="background:#FDECEA;border-radius:6px;padding:10px;border-left:3px solid #C23934;"><div style="font-size:11px;font-weight:800;color:#C23934;">&#128308; CS 301 Alert</div><div style="font-size:10px;color:var(--mu);margin-top:2px;">Attendance 58% — tutoring booked tomorrow 9am</div></div>
+    <div style="background:#D6EED9;border-radius:6px;padding:10px;border-left:3px solid #2E844A;"><div style="font-size:11px;font-weight:800;color:#2E844A;">&#9989; Transcript Dispatched</div><div style="font-size:10px;color:var(--mu);margin-top:2px;">3 copies sent to Aramco Digital today</div></div>
+    <div style="background:#FDEFD0;border-radius:6px;padding:10px;border-left:3px solid #CA8501;"><div style="font-size:11px;font-weight:800;color:#CA8501;">&#9888; Scholarship Status</div><div style="font-size:10px;color:var(--mu);margin-top:2px;">At risk — GPA threshold approaching</div></div>
+  </div>
+  <div class="two">
+    <div class="scard"><div class="sec-hdr">This Week's Schedule</div>${[['Sun','CS 301 Tutoring &#183; 9am &#183; Rm 204','&#128308; Priority'],['Mon','CS 315 &#183; 10:30am &#183; Rm B107',''],['Wed','Advisor: Dr. Reem &#183; Online &#183; 10am','&#127775; Confirmed'],['Thu','MATH 302 &#183; 9am &#183; Rm C211',''],['Thu','ENG 201 &#183; 2pm &#183; Rm D104','']].map(([d,c,n])=>`<div style="display:flex;gap:6px;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:11px;align-items:center;"><span style="background:#EAF5FE;color:#014486;padding:2px 6px;border-radius:3px;font-weight:700;font-size:9px;flex:0 0 26px;text-align:center;">${d}</span><div style="flex:1;">${c}${n?` <span style="color:${n.includes('&#128308;')?'#C23934':'#CA8501'};font-size:9px;"> ${n}</span>`:''}</div></div>`).join('')}</div>
+    <div class="scard"><div class="sec-hdr">My Action Items</div>${[['&#128308;','CS 301 assignment due tomorrow 11:59 PM','Overdue risk'],['&#128992;','Scholarship renewal form','Deadline 28 Jan'],['&#128309;','Sign enrolment contract','Due 1 Feb'],['&#128994;','Aramco internship application','Deadline 26 Jan'],['&#128995;','Summer research programme','Apply by Mar 15']].map(([dot,t,d])=>`<div style="display:flex;gap:6px;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:11px;"><span>${dot}</span><div style="flex:1;">${t}</div><span style="font-size:10px;color:var(--mu);">${d}</span></div>`).join('')}</div>
+  </div>
+</div>`},
+
+{app:'Service Cloud',av:'SA',avbg:'#0B827C',
+appnav:['Service Console','Queue','Channels','Flow Builder','Analytics'],anav:'Queue',
+paths:['Service Cloud','Omni-Channel Queue — Live'],omni:true,
+narr:{ch:'Chapter 10 of 12',hl:'Every Channel — One Queue, Full Context',
+story:'Every interaction Layla has ever had with the university — WhatsApp, email, portal chat, phone call — lives in one unified record. The advisor who picks up her next call already knows everything.\n\nOmni-Channel routes every incoming contact to the right advisor or AI agent based on skill, availability, and priority. Routine queries go to Agentforce. Complex academic cases go to senior advisors. No student falls between the cracks. No context is ever lost.',
+feature:'&#128225; Omni-Channel Routing unifies email, WhatsApp, web chat, voice, and portal into a single intelligent queue — with skill-based routing, full conversation history, SLA tracking, and seamless AI-to-human handoff across every channel.',
+action:'&#8594; When Layla calls tomorrow, the advisor opens her record and sees everything — no re-explaining, no searching, no gaps. This is what a connected university feels like.'},
+agent:{role:'Omni-Channel Routing Agent',persona:'Unified Communications Hub',
+chats:[{u:false,m:'Live queue: 42 items across 6 channels. 28 handled by Agentforce. All channels within SLA. WhatsApp: 22 items — 18 auto-resolved, 4 complex financial queries routed to human advisors now.'}],
+btns:['View full queue','SLA performance report','Channel analytics']},
+main:()=>`
+<div class="kpi-g four">
+  ${[['42','Items in Queue','6 channels live','#0176D3'],['1m 12s','Avg Wait Time','SLA: < 3 mins','#2E844A'],['94%','First Contact Res.','&#8593; 6pts this month','#2E844A'],['28/42','Handled by AI','67% autonomous','#6B4FBB']].map(([n,l,t,c])=>`<div class="kpi" style="border-top-color:${c};"><div class="kpi-l">${l}</div><div class="kpi-n" style="color:${c};">${n}</div><div class="kpi-t" style="color:${c};">${t}</div></div>`).join('')}
+</div>
+<div class="two">
+  <div class="card"><div class="card-hdr">&#128234; Live Queue — All Channels</div><div class="card-body" style="padding:0;"><table class="lt"><thead><tr><th>Channel</th><th>Student</th><th>Topic</th><th>Wait</th><th>Routed To</th></tr></thead><tbody>${[['&#128231; Email','Layla Hassan','Scholarship renewal','—','Agentforce AI'],['&#128172; Chat','New Visitor','Application query','0:42','Agentforce AI'],['&#128241; WhatsApp','Faisal Al-Otaibi','Registration help','1:05','Agentforce AI'],['&#128222; Voice','Noura Al-Zahrani','Financial hold — URGENT','0:18','Sara Al-Malik'],['&#128241; WhatsApp','Khalid Al-Mansour','Course withdrawal','—','Agentforce AI'],['&#128172; Chat','Ahmed Al-Ghamdi','Transcript status','—','Agentforce AI']].map(([ch,st,tp,w,ag])=>`<tr><td>${ch}</td><td class="lnk">${st}</td><td>${tp}</td><td>${w}</td><td style="font-size:10px;color:${ag.includes('AI')?'#6B4FBB':'#2E844A'};font-weight:600;">${ag}</td></tr>`).join('')}</tbody></table></div></div>
+  <div>
+    <div class="card" style="margin-bottom:10px;"><div class="card-hdr">&#128202; Channel Distribution — Today</div><div class="card-body">${[['&#128231; Email','34%',34,'#0176D3'],['&#128172; Web Chat','28%',28,'#6B4FBB'],['&#128241; WhatsApp','22%',22,'#2E844A'],['&#128222; Voice','10%',10,'#CA8501'],['&#128187; Portal Self-Svc','6%',6,'#0B827C']].map(([l,p,v,c])=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:11px;"><span style="flex:0 0 140px;">${l}</span><div class="prog" style="flex:1;"><div class="prog-f" style="width:${v*2.5}%;background:${c};"></div></div><strong style="min-width:28px;text-align:right;">${p}</strong></div>`).join('')}</div></div>
+    <div class="card"><div class="card-hdr">&#9889; Active Flow Automations</div><div class="card-body">${[['Application received &#8594; welcome + portal access','1,203 enrolled'],['Missing docs &#8594; WhatsApp reminder every 3 days','89 triggered'],['Low GPA &#8594; advisor case + student nudge','34 triggered'],['SLA breach &#8594; manager escalation + apology','12 triggered'],['Graduation audit &#8594; checklist + advisor alert','67 triggered']].map(([f,c])=>`<div style="padding:5px 0;border-bottom:1px solid var(--bdr);font-size:11px;"><div style="font-weight:700;">&#9889; ${f}</div><div style="font-size:10px;color:var(--mu);margin-top:1px;">${c}</div></div>`).join('')}</div></div>
+  </div>
+</div>`},
+
+{app:'Education Cloud',av:'AR',avbg:'#C9A227',
+appnav:['Home','Alumni','Giving','Events','Mentorship','Analytics'],anav:'Alumni',
+paths:['Alumni Relations','Alumni 360 — Layla Hassan'],omni:false,
+narr:{ch:'Chapter 11 of 12',hl:'Layla Graduates — the Story Comes Full Circle',
+story:'Four years later. Layla walks across the graduation stage with a 3.6 GPA and a full-time offer from Aramco Digital — the company she first interned at in Year 3. She is proud of her university.\n\nWithin days of graduation, Salesforce automatically transitions her record from Student to Alumna. She receives a welcome pack, an invitation to the alumni network, and a personalised message asking if she would like to mentor current CS students. In three years, she will be the mentor for a new prospective student who discovers the university on Instagram late at night.',
+feature:'&#127891; Alumni 360 gives the university a complete view of every graduate — giving history, event attendance, mentorship activities, career progression, and engagement score — enabling personalised, lifelong relationship management powered by AI.',
+action:'&#8594; The story comes full circle. Layla\'s journey from an Instagram ad to a proud alumna was powered by one connected platform — with less manual work than ever before.'},
+agent:{role:'Alumni Engagement Agent',persona:'Fatima Al-Otaibi — Alumni Relations',
+chats:[{u:false,m:'Layla Hassan graduated GPA 3.6, now at Aramco Digital. AI giving propensity: 91%. Enrolled in New Graduate Alumni Journey. Mentorship invite sent. Add to next giving campaign segment?'},{u:true,m:'Yes — add her to Year 1 Alumni segment.'},{u:false,m:'Done. First alumni newsletter scheduled for next month.'}],
+btns:['View Layla\'s alumni record','Annual giving campaign','Mentorship programme']},
+main:()=>`
+<div class="kpi-g four">
+  ${[['12,400','Total Alumni','Classes 1985–2029','#0176D3'],['4,820','Engaged (Last 12m)','39% engagement rate','#2E844A'],['SAR 2.4M','Annual Giving','&#8593; 22% YoY','#6B4FBB'],['342','Active Mentors','624 mentees matched','#CA8501']].map(([n,l,t,c])=>`<div class="kpi" style="border-top-color:${c};"><div class="kpi-l">${l}</div><div class="kpi-n" style="color:${c};">${n}</div><div class="kpi-t" style="color:${c};">${t}</div></div>`).join('')}
+</div>
+<div class="two">
+  <div>
+    <div class="rec-hdr" style="margin-bottom:10px;"><div class="rec-hdr-body"><div class="rec-av" style="background:#C9A227;">LH</div><div class="rec-name-block"><div class="rec-name">Layla Hassan Al-Qahtani</div><div class="rec-meta">ALU-2029-01188 &#183; B.Sc. CS Class of 2029 &#183; Data Engineer, Aramco Digital &#183; Riyadh</div><div class="rec-badges"><span class="bdg bdg-gold">New Alumna 2029</span><span class="bdg bdg-purple">Mentor Prospect</span><span class="bdg bdg-blue">Propensity: 91%</span></div></div></div><div class="rec-highlights"><div class="rec-hl"><label>Graduation GPA</label><div class="v gr">3.60</div></div><div class="rec-hl"><label>Employer</label><div class="v">Aramco Digital</div></div><div class="rec-hl"><label>AI Giving Propensity</label><div class="v" style="color:#6B4FBB;font-weight:700;">91% — High</div></div><div class="rec-hl"><label>Mentorship</label><div class="v lnk">Invite sent</div></div></div><div class="rec-actions"><button class="btn btn-prim">&#128231; Personalised Outreach</button><button class="btn btn-neut">&#127873; Gift Ask</button><button class="btn btn-neut">&#128197; Invite to Gala</button></div></div>
+    <div class="card"><div class="card-hdr">&#128101; Mentorship Matches</div><div class="card-body" style="padding:0;"><table class="lt"><thead><tr><th>Mentor</th><th>Mentee</th><th>Field</th><th>Status</th></tr></thead><tbody>${[['Layla Hassan','Hessa Al-Sayed (Yr 1)','CS / AI','Invite Sent'],['Sami Al-Harbi','Ahmed Al-Ghamdi','Engineering','Active'],['Reem Al-Dosari','Noura Al-Rashid','Medicine','Active'],['Faisal Al-Otaibi','Mohammed Al-Harbi','Business','Pending']].map(([m,mt,f,s])=>`<tr><td class="lnk" style="${m.includes('Layla')?'font-weight:800;':''}">${m}</td><td>${mt}</td><td>${f}</td><td><span class="bdg ${s==='Active'?'bdg-green':s.includes('Sent')?'bdg-blue':'bdg-orange'}">${s}</span></td></tr>`).join('')}</tbody></table></div></div>
+  </div>
+  <div>
+    <div class="card" style="margin-bottom:10px;"><div class="card-hdr">&#128176; Giving Campaigns — Active</div><div class="card-body">${[['Annual Endowment 2029','SAR 680K / SAR 1M','68%','#0176D3'],['Women in STEM Scholarships','SAR 267K / SAR 300K','89%','#2E844A'],['CS Lab Upgrade Fund','SAR 215K / SAR 500K','43%','#6B4FBB']].map(([c,p,pct,col])=>`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;"><span style="font-weight:700;">${c}</span><strong style="color:${col};">${pct}</strong></div><div class="prog"><div class="prog-f" style="width:${pct};background:${col};"></div></div><div style="font-size:10px;color:var(--mu);margin-top:2px;">${p}</div></div>`).join('')}</div></div>
+    <div class="card"><div class="card-hdr">&#128197; Upcoming Alumni Events</div><div class="card-body">${[['Feb 20','Annual Gala — Riyadh Ritz Carlton','650 RSVPs'],['Mar 5','CS Alumni Networking Night','340 registered'],['Apr 12','Mentorship Launch Day — Campus','120 pairs'],['Jun 15','Executive Education Info Session','Lifelong learning']].map(([d,e,n])=>`<div style="display:flex;gap:6px;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:11px;align-items:center;"><span style="background:var(--gold-l);color:var(--gold-t);padding:2px 7px;border-radius:3px;font-weight:700;font-size:9px;flex:0 0 42px;text-align:center;">${d}</span><div style="flex:1;font-weight:600;">${e}</div><span style="font-size:10px;color:var(--mu);">${n}</span></div>`).join('')}</div></div>
+  </div>
+</div>`},
+
+{app:'Education Cloud',av:'AD',avbg:'#0176D3',
+appnav:['Platform Overview','Architecture','Integration','ROI Summary','Why Salesforce'],anav:'Platform Overview',
+paths:['Platform','Architecture & Business Value'],omni:false,
+narr:{ch:'Chapter 12 of 12 — Final',hl:'The Platform Behind the Story',
+story:'Layla\'s journey — from an Instagram ad to a proud alumna mentoring the next generation — was powered by one connected platform. Every step happened faster, smarter, and more personally than was possible before.\n\nYour existing SIS, LMS, and ERP stay exactly where they are. MuleSoft connects them to Salesforce. Salesforce becomes the engagement and intelligence layer — the single place where every team sees every student, every interaction, and every next step.',
+feature:'&#127970; Salesforce Education Cloud + MuleSoft connects your SIS, LMS, ERP, payment gateway, Microsoft 365, telephony, WhatsApp, and document management — giving every team a unified, real-time 360 view without replacing your existing systems.',
+action:'&#8594; Think Beyond can deliver a working prototype in 4 weeks and a full go-live in 16 weeks. This demo is one use case — the full platform goes far deeper.'},
+agent:{role:'Solution Architect Agent',persona:'Think Beyond — Salesforce Team',
+chats:[{u:false,m:'Year 1 ROI summary: Enquiry-to-application &#8593; 18%. Admissions time &#8595; 60%. Retention &#8593; 3pts. SLA compliance 94%. Alumni giving &#8593; 22%. Agentforce saved SAR 420,000 in advisor time. Go-live: 16 weeks.'}],
+btns:['Download ROI report','View implementation roadmap','Book a deep dive session']},
+main:()=>`
+<div class="card" style="margin-bottom:10px;"><div class="card-hdr">&#128279; Integration Architecture — Salesforce as the Engagement Layer</div><div class="card-body"><div style="background:#EAF5FE;border:1px solid #B5D4F4;border-radius:6px;padding:10px;margin-bottom:8px;"><div style="font-size:11px;font-weight:800;color:#014486;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Salesforce Platform — Engagement, Journeys, AI, Service, 360 Visibility</div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px;">${['Education Cloud','Marketing Cloud','Service Cloud','Experience Cloud','Agentforce','Tableau / CRM Analytics'].map(p=>`<div style="background:#0176D3;color:white;border-radius:4px;padding:6px;text-align:center;font-size:10px;font-weight:700;">${p}</div>`).join('')}</div><div style="text-align:center;font-size:11px;color:#014486;font-weight:800;margin-bottom:8px;padding:4px;background:rgba(1,118,211,0.08);border-radius:4px;">&#8597; MuleSoft Integration Platform + Data Cloud (Real-Time Student 360)</div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px;">${[['SIS','Academic Record'],['LMS','Courses & Grades'],['ERP / Finance','Tuition & Payroll'],['Microsoft 365','Email & Calendar'],['WhatsApp / SMS','Communication'],['Telephony','Voice & CTI'],['Payment Gateway','Fees & Receipts'],['Document Mgmt','Contracts & Certs'],['Identity / SSO','Student Auth'],['Data Warehouse','Historical Reports'],['Mobile App','Push Notifications'],['MOE Portal','Ministry Integration']].map(([s,d])=>`<div style="background:white;border:1px solid var(--bdr);border-radius:4px;padding:5px;text-align:center;"><div style="font-size:10px;font-weight:700;">${s}</div><div style="font-size:9px;color:var(--mu);margin-top:1px;">${d}</div></div>`).join('')}</div></div><div style="font-size:10px;color:var(--mu);text-align:center;font-style:italic;">SIS remains the system of record for academic data. Salesforce manages engagement, journeys, service, AI, and 360 visibility across all teams.</div></div></div>
+<div class="two">
+  <div class="card"><div class="card-hdr">&#128200; Business Outcomes — Per Module</div><div class="card-body">${[['Marketing','&#8593; 18% enquiry volume &#183; &#8595; 14% cost per enquiry'],['Recruitment','&#8593; 18% lead-to-application &#183; 40% fewer manual follow-ups'],['Admissions','&#8595; 60% processing time &#183; &#8593; 15% offer acceptance'],['Onboarding','100% automated &#183; zero manual admin after offer accepted'],['Student 360','Full risk visibility &#183; proactive intervention before withdrawal'],['Agentforce AI','94% queries resolved by AI &#183; SAR 420K saved annually'],['Service Cloud','94% SLA compliance &#183; &#8595; 40% handle time'],['Alumni','&#8593; 22% annual giving &#183; &#8593; 39% alumni engagement']].map(([m,o])=>`<div style="padding:5px 0;border-bottom:1px solid var(--bdr);font-size:11px;"><div style="font-weight:700;color:#0176D3;">&#10003; ${m}</div><div style="font-size:10px;color:var(--mu);margin-top:1px;">${o}</div></div>`).join('')}</div></div>
+  <div>
+    <div class="card" style="margin-bottom:10px;"><div class="card-hdr" style="background:#16325C;color:white;">&#127466;&#127480; Built for Saudi Universities</div><div class="card-body">${[['&#128274;','PDPL Compliant','Saudi data protection regulation ready'],['&#127760;','Arabic + English UI','Full RTL Arabic for students and staff'],['&#129302;','Agentforce Arabic','AI advisor in Arabic language'],['&#127979;','MOE Integration','Connects with Ministry of Education portals'],['&#127891;','NCAAA Ready','Accreditation reporting built in'],['&#9889;','16-Week Go-Live','Pre-built Education Cloud accelerators']].map(([ic,t,d])=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:11px;"><span>${ic}</span><div><div style="font-weight:700;">${t}</div><div style="font-size:10px;color:var(--mu);">${d}</div></div></div>`).join('')}</div></div>
+    <div class="card"><div class="card-hdr">&#128197; Implementation Roadmap — 16 Weeks</div><div class="card-body">${[['Weeks 1–4','Foundation','CRM core, SIS integration, data migration, training'],['Weeks 5–10','Core Modules','Admissions, Student 360, Cases, Student Portal'],['Weeks 11–14','AI & Automation','Agentforce, Flow Builder, Marketing Cloud'],['Weeks 15–16','Go-Live','UAT, hypercare, dashboards, alumni module']].map(([w,t,d])=>`<div style="padding:5px 0;border-bottom:1px solid var(--bdr);font-size:11px;"><div style="display:flex;gap:6px;align-items:center;margin-bottom:2px;"><span class="bdg bdg-blue">${w}</span><strong>${t}</strong></div><div style="font-size:10px;color:var(--mu);">${d}</div></div>`).join('')}</div></div>
+  </div>
+</div>`}
+];
+
+var cur = 0;
+var CHAPTER_NAMES = ['Command Centre','Marketing Cloud','Lead Management','Admissions Review','Offer & Enrolment','Student 360','Agentforce AI','Service Cloud','Student Portal','Omni-Channel','Alumni Relations','Platform & ROI'];
+
+function renderNarr(s){
+  var n = s.narr;
+  document.getElementById('narr-content').innerHTML =
+    '<button class="narr-close" onclick="toggleNarr()">&#10005;</button>' +
+    '<div class="narr-ch">' + n.ch + '</div>' +
+    '<div class="narr-hl">' + n.hl + '</div>' +
+    '<div class="narr-story">' + n.story.replace(/\n\n/g,'<br><br>') + '</div>' +
+    '<div class="narr-feature">' + n.feature + '</div>' +
+    '<div class="narr-action">' + n.action + '</div>' +
+    '<div class="narr-note">&#9432; This is an indicative demo showing one representative student journey. Salesforce Education Cloud covers a much broader set of features, modules, and integrations. Additional systems — SIS, LMS, ERP, payment gateways, document management, telephony, and more — can be fully integrated to create a complete 360&deg; view and eliminate manual work across all departments. All data shown is sample and illustrative only.</div>';
+}
+
+function renderAgent(s){
+  var a = s.agent;
+  var chats = a.chats.map(function(c){
+    return c.u
+      ? '<div class="chat-u">' + c.m + '</div><div class="chat-meta r">' + a.persona + ' &nbsp;&#183;&nbsp; Just now</div>'
+      : '<div class="chat-a">' + c.m + '</div><div class="chat-meta">Agentforce AI &nbsp;&#183;&nbsp; Just now</div>';
+  }).join('');
+  var btns = a.btns.map(function(b){ return '<button class="ag-act-btn">&#9658; ' + b + '</button>'; }).join('');
+  var chips = ['What should I prioritise?','Draft a message to this student','Show today\'s summary'].map(function(p){
+    return '<div class="ag-chip">&#8599; ' + p + '</div>';
+  }).join('');
+  document.getElementById('sidebar').innerHTML =
+    '<div class="ag-hdr"><div class="ag-orb">&#10022;</div><div><div class="ag-title">Agentforce</div><div class="ag-sub">' + a.role + '</div></div></div>' +
+    '<div class="ag-body">' + chats + '<div class="ag-actions">' + btns + '</div><div class="ag-suggest">Suggested prompts</div>' + chips + '</div>' +
+    '<div class="ag-inp-wrap"><div class="ag-inp"><span>Describe your task or ask a question...</span><span class="ag-inp-send">&#9658;</span></div></div>';
+}
+
+function render(){
+  var s = SLIDES[cur];
+  document.getElementById('g-app').textContent = s.app;
+  document.getElementById('g-av').textContent = s.av;
+  document.getElementById('g-av').style.background = s.avbg;
+
+  var nav = document.getElementById('g-appnav');
+  nav.innerHTML = '<div class="appnav-waffle">&#8942;</div>' +
+    s.appnav.map(function(i){ return '<div class="appnav-item' + (i===s.anav?' on':'') + '">' + i + '</div>'; }).join('');
+
+  var pathHtml = s.paths.map(function(p,i){
+    if(i < s.paths.length - 1) return '<span class="path-cr">' + p + '</span><span class="path-sep"> &#8250; </span>';
+    return '<span class="path-cur">' + p + '</span>';
+  }).join('');
+  pathHtml += '<button class="narr-pill' + (showNarr?' open':'') + '" id="narr-toggle-btn" onclick="toggleNarr()"><span class="pill-dot"></span> Story Narration</button>';
+  document.getElementById('g-path').innerHTML = pathHtml;
+
+  document.getElementById('omni-bar').style.display = s.omni ? 'flex' : 'none';
+  document.getElementById('main').innerHTML = s.main();
+  document.getElementById('main').scrollTop = 0;
+
+  renderAgent(s);
+  renderNarr(s);
+  if(showNarr){ document.getElementById('narr-panel').style.display = 'block'; }
+  else { document.getElementById('narr-panel').style.display = 'none'; }
+
+  document.getElementById('snav-lbl').textContent = (cur+1) + ' of ' + SLIDES.length + '  —  ' + CHAPTER_NAMES[cur];
+  document.getElementById('dots').innerHTML = SLIDES.map(function(_,i){
+    return '<div class="dot' + (i===cur?' on':'') + '" onclick="go2(' + i + ')"></div>';
+  }).join('');
+  document.getElementById('prev-btn').disabled = cur === 0;
+  document.getElementById('next-btn').disabled = cur === SLIDES.length - 1;
+  document.getElementById('next-btn').textContent = cur === SLIDES.length - 1 ? '&#10003; The End' : 'Next &#8594;';
+}
+
+function go(d){ if(cur+d>=0 && cur+d<SLIDES.length){ cur+=d; render(); } }
+function go2(i){ cur=i; render(); }
+render();
+</script>
+</body>
+</html>
